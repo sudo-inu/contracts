@@ -16,6 +16,7 @@ import "./SnackToken.sol";
 
 error SnackShack_Forbidden();
 error SnackShack_InflationTooHigh();
+error SnackShack_AlreadyStarted();
 error SnackShack_FailedDepositCallback();
 error SnackShack_FailedWithdrawCallback();
 
@@ -92,6 +93,8 @@ contract SnackShack is Ownable, ReentrancyGuard, Multicall {
     uint256 private constant REWARD_SCALE = 9e12; // scale = 10x - 1x = 9x
     uint256 private constant MIN_REWARD_TIME = 604800; // t = 7 days * 24 hours * 60 mins * 60 seconds
 
+    uint64 public startTime;
+
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
@@ -125,6 +128,7 @@ contract SnackShack is Ownable, ReentrancyGuard, Multicall {
     constructor(SnackToken _snack, address _treasury) {
         SNACK = _snack;
         treasury = _treasury;
+        startTime = uint64(block.timestamp + 10 minutes);
     }
 
     /// @notice Returns the number of pools.
@@ -173,7 +177,7 @@ contract SnackShack is Ownable, ReentrancyGuard, Multicall {
         public
         onlyOwner
     {
-        uint256 lastRewardTimestamp = block.timestamp;
+        uint64 lastRewardTimestamp = block.timestamp > startTime ? uint64(block.timestamp) : startTime;
         totalAllocPoint = totalAllocPoint + allocPoint;
 
         farmType.push(_farmType);
@@ -184,7 +188,7 @@ contract SnackShack is Ownable, ReentrancyGuard, Multicall {
         poolInfo.push(PoolInfo({
             totalSupply: 0,
             allocPoint: uint64(allocPoint),
-            lastRewardTimestamp: uint64(lastRewardTimestamp),
+            lastRewardTimestamp: lastRewardTimestamp,
             accSnacksPerShare: 0
         }));
 
@@ -216,6 +220,13 @@ contract SnackShack is Ownable, ReentrancyGuard, Multicall {
             overwrite ? _rewarder : rewarder[_pid],
             overwrite
         );
+    }
+
+    /// @notice Delay the start time
+    function setStartTime(uint64 _startTime) public onlyOwnerOrTreasury {
+        if (block.timestamp > startTime) revert SnackShack_AlreadyStarted();
+        if (block.timestamp > _startTime) revert SnackShack_AlreadyStarted();
+        startTime = _startTime;
     }
 
     /// @notice Update the treasury address
@@ -284,8 +295,13 @@ contract SnackShack is Ownable, ReentrancyGuard, Multicall {
                     snacksReward * ACC_SNACK_PRECISION / pool.totalSupply
                 );
 
-                SNACK.mint(treasury, snacksReward);
-                SNACK.mint(address(this), snacksReward * 10);
+                if (farmType[pid] == FarmType.SCALED) {
+                    SNACK.mint(treasury, snacksReward);
+                    SNACK.mint(address(this), snacksReward * 10);
+                } else {
+                    SNACK.mint(treasury, snacksReward / 10);
+                    SNACK.mint(address(this), snacksReward);
+                }
             }
 
             pool.lastRewardTimestamp = uint64(block.timestamp);

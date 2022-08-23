@@ -22,7 +22,7 @@ contract SudoController is Controller, Ownable {
 
     address private lastUser;
     uint128 public lastSpotPrice;
-    int128 public deltaPerAmount;
+    int128 public deltaPerAmount = 15e14; // +10 ETH per 10M liquidity at $1,500 / ETH
 
     int128 private constant DELTA_PRECISION = 1e18;
 

@@ -17,6 +17,11 @@
   },
   {
     "inputs": [],
+    "name": "SnackShack_AlreadyStarted",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "SnackShack_FailedDepositCallback",
     "type": "error"
   },
@@ -690,6 +695,19 @@
   {
     "inputs": [
       {
+        "internalType": "uint64",
+        "name": "_startTime",
+        "type": "uint64"
+      }
+    ],
+    "name": "setStartTime",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_treasury",
         "type": "address"
@@ -708,6 +726,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "startTime",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
       }
     ],
     "stateMutability": "view",
