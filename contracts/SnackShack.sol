@@ -128,7 +128,7 @@ contract SnackShack is Ownable, ReentrancyGuard, Multicall {
     constructor(SnackToken _snack, address _treasury) {
         SNACK = _snack;
         treasury = _treasury;
-        startTime = uint64(block.timestamp + 10 minutes);
+        startTime = uint64(block.timestamp + 12 hours);
     }
 
     /// @notice Returns the number of pools.
