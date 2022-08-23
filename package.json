@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "An experimental evolution in SudoSwap pool usage.",
   "scripts": {
+    "deploy:mainnet": "hardhat run \"./scripts/deployMainnet.ts\" --network mainnet",
     "deploy": "hardhat run \"./scripts/deployFarm.ts\" --network rinkeby",
     "deploy:pools": "hardhat run \"./scripts/deployPools.ts\" --network rinkeby",
     "compile": "hardhat compile",
